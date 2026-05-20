@@ -18,4 +18,5 @@ ALL_MODULES = [
     "broadcast",
     "callbacks",
     "start",
+    "seek",
 ]
