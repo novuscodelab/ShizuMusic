@@ -119,14 +119,15 @@ async def on_stream_end(_: object, update: StreamEnded) -> None:
 
             if is_autoplay(chat_id):
 
-                # Wait if background fetching is running
-                for _ in range(8):
-
+                # Wait if background fetching is running (up to 20 seconds)
+                for _ in range(20):
                     if _autoplay_fetching.get(chat_id):
                         await asyncio.sleep(1)
-
                     else:
                         break
+
+                # Give one more second after fetching finishes
+                await asyncio.sleep(1)
 
                 nxt2 = peek_current(chat_id)
 
@@ -143,6 +144,23 @@ async def on_stream_end(_: object, update: StreamEnded) -> None:
                     )
 
                     await play_song(chat_id, msg2, nxt2)
+                    return
+
+                # If still nothing after waiting, try one more fetch
+                from ShizuMusic.core.autoplay import maybe_refetch
+                await maybe_refetch(chat_id, "🔁 AutoPlay", 0)
+                await asyncio.sleep(5)
+
+                nxt3 = peek_current(chat_id)
+                if nxt3:
+                    from ShizuMusic.core.player import play_song
+                    msg3 = await bot.send_message(
+                        chat_id,
+                        f"<b>❍ ɴᴇxᴛ ᴛʀᴀᴄᴋ :</b> "
+                        f"<code>{nxt3['title']}</code>",
+                        parse_mode=ParseMode.HTML,
+                    )
+                    await play_song(chat_id, msg3, nxt3)
                     return
 
         except Exception:
