@@ -153,7 +153,15 @@ if __name__ == "__main__":
         LOGGER.error(f"Assistant start failed: {e}")
         sys.exit(1)
 
-    # 8. Load modules
+    # 8. Block middleware (must run before plugins load)
+    try:
+        from ShizuMusic.decorators import register_block_middleware
+        register_block_middleware()
+        LOGGER.info("Block middleware registered")
+    except Exception as e:
+        LOGGER.warning(f"Block middleware load failed: {e}")
+
+    # 9. Load modules
     for mod in ALL_MODULES:
         try:
             importlib.import_module(f"ShizuMusic.modules.{mod}")
@@ -161,17 +169,17 @@ if __name__ == "__main__":
         except Exception as e:
             LOGGER.error(f"Failed to load module {mod}: {e}")
 
-    # 9. Stream-end handler
+    # 10. Stream-end handler
     try:
         import ShizuMusic.core.call  # noqa: F401
     except Exception as e:
         LOGGER.error(f"Failed to load call handler: {e}")
 
-    # 10. Notify owner
+    # 11. Notify owner
     loop = asyncio.get_event_loop()
     loop.run_until_complete(_notify_owner(me, ASSISTANT_USERNAME))
 
-    # 11. Watchdog
+    # 12. Watchdog
     from ShizuMusic.core.watcher import watchdog
     loop.create_task(watchdog())
     LOGGER.info("Watchdog started")
@@ -192,4 +200,3 @@ if __name__ == "__main__":
         pass
 
     LOGGER.info("✧ ShizuMusic stopped ✧")
-    
