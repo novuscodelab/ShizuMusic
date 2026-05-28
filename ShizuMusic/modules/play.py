@@ -1,6 +1,9 @@
 # --------------------------------------------------------------------------------
 #  ShizuMusic © 2026
 #  Developed by Bad Munda ❤️
+#
+#  Unauthorized copying, editing, re-uploading or removing credits
+#  from this source code is strictly prohibited.
 # --------------------------------------------------------------------------------
 
 import asyncio
@@ -9,7 +12,10 @@ import time
 
 from pyrogram import filters
 from pyrogram.enums import ParseMode
-from pyrogram.errors import RPCError, UserAlreadyParticipant
+from pyrogram.errors import (
+    RPCError,
+    UserAlreadyParticipant,
+)
 from pyrogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -22,9 +28,12 @@ from ShizuMusic import (
     assistant,
     bot,
 )
+
 from ShizuMusic.core.player import play_song
+
 from ShizuMusic.core.queue import (
     add_to_queue,
+    peek_current,
     queue_size,
 )
 
@@ -36,7 +45,6 @@ from ShizuMusic.utils.formatters import (
 )
 
 from ShizuMusic.utils.youtube import search_yt
-
 
 # ─────────────────────────────────────────────
 # BLOCKED WORDS
@@ -66,13 +74,12 @@ _pending: dict[int, tuple] = {}
 
 
 # ─────────────────────────────────────────────
-# DB TRACK
+# DB HELPER
 # ─────────────────────────────────────────────
 
-def _db_track(chat_id: int, user_id: int):
+def _db_track(chat_id: int, user_id: int) -> None:
 
     try:
-
         from ShizuMusic.database import (
             add_served_chat,
             add_served_user,
@@ -122,11 +129,10 @@ async def _is_assistant_in(chat_id: int):
             return "banned"
 
         return False
-        
 
 
 # ─────────────────────────────────────────────
-# AUTO JOIN ASSISTANT
+# ASSISTANT AUTO JOIN
 # ─────────────────────────────────────────────
 
 async def _try_join_assistant(
@@ -191,13 +197,13 @@ async def _try_join_assistant(
 
 
 # ─────────────────────────────────────────────
-# COOLDOWN
+# COOLDOWN HANDLER
 # ─────────────────────────────────────────────
 
 async def _run_pending(
     chat_id: int,
-    delay: int,
-):
+    delay: int
+) -> None:
 
     await asyncio.sleep(delay)
 
@@ -207,6 +213,7 @@ async def _run_pending(
 
         try:
             await reply.delete()
+
         except Exception:
             pass
 
@@ -224,7 +231,10 @@ async def _run_pending(
     )
 )
 
-async def play_handler(_, message: Message):
+async def play_handler(
+    _,
+    message: Message
+) -> None:
 
     chat_id = message.chat.id
 
@@ -236,9 +246,9 @@ async def play_handler(_, message: Message):
 
     _db_track(chat_id, user_id)
 
-    # ─────────────────────────
-    # REPLY AUDIO / VIDEO
-    # ─────────────────────────
+    # ─────────────────────────────────────────
+    # REPLIED AUDIO / VIDEO
+    # ─────────────────────────────────────────
 
     if (
         message.reply_to_message
@@ -249,7 +259,7 @@ async def play_handler(_, message: Message):
     ):
 
         pm = await message.reply(
-            "<b>❍ ᴘʀᴏᴄᴇssɪɴɢ...</b>",
+            "<b>❍ ᴘʀᴏᴄᴇssɪɴɢ ᴍᴇᴅɪᴀ...</b>",
             parse_mode=ParseMode.HTML,
         )
 
@@ -260,7 +270,32 @@ async def play_handler(_, message: Message):
             orig.id,
         )
 
-        media = fresh.video or fresh.audio
+        media = (
+            fresh.video
+            or fresh.audio
+        )
+
+        if (
+            fresh.audio
+            and getattr(
+                fresh.audio,
+                "file_size",
+                0
+            ) > 100 * 1024 * 1024
+        ):
+
+            await pm.edit_text(
+                "<b>❍ ғɪʟᴇ ᴛᴏᴏ ʟᴀʀɢᴇ</b>\n"
+                "<b>❍ ᴍᴀx :</b> <code>100 MB</code>",
+                parse_mode=ParseMode.HTML,
+            )
+
+            return
+
+        await pm.edit_text(
+            "<b>❍ ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ ᴍᴇᴅɪᴀ...</b>",
+            parse_mode=ParseMode.HTML,
+        )
 
         try:
 
@@ -276,12 +311,29 @@ async def play_handler(_, message: Message):
 
             return
 
+        thumb = None
+
+        try:
+
+            thumbs = (
+                fresh.video
+                or fresh.audio
+            ).thumbs
+
+            if thumbs:
+                thumb = await bot.download_media(
+                    thumbs[0]
+                )
+
+        except Exception:
+            pass
+
         song = {
             "url": fp,
             "title": getattr(
                 media,
                 "file_name",
-                "Audio",
+                "Audio"
             ),
             "duration": fmt_time(
                 media.duration or 0
@@ -295,61 +347,40 @@ async def play_handler(_, message: Message):
                 else "Unknown"
             ),
             "requester_id": user_id,
-            "thumbnail": None,
+            "thumbnail": thumb,
         }
 
-        pos = add_to_queue(chat_id, song)
+        add_to_queue(chat_id, song)
 
-        if pos == 1:
-
-            ok = await play_song(
-                chat_id,
-                pm,
-                song,
-            )
-
-            if not ok:
-                return
-
-        else:
-
-            await pm.edit_text(
-                f"<b>❍ ǫᴜᴇᴜᴇᴅ :</b> "
-                f"<code>#{pos - 1}</code>",
-                parse_mode=ParseMode.HTML,
-            )
+        await play_song(
+            chat_id,
+            pm,
+            song
+        )
 
         return
 
-    # ─────────────────────────
+    # ─────────────────────────────────────────
     # QUERY
-    # ─────────────────────────
+    # ─────────────────────────────────────────
 
     match = message.matches[0]
 
     query = (
-        match.group("q") or ""
+        match.group("q")
+        or ""
     ).strip()
 
     cmd = (
-        match.group("cmd") or "play"
+        match.group("cmd")
+        or "play"
     ).strip()
 
     try:
         await message.delete()
+
     except Exception:
-        pass
-
-    if not query:
-
-        await bot.send_message(
-            chat_id,
-            "<b>❍ ᴜsᴀɢᴇ :</b>\n"
-            "<code>/play song name</code>",
-            parse_mode=ParseMode.HTML,
-        )
-
-        return
+        pasn
 
     # ─────────────────────────
     # BLOCK WORDS
@@ -367,9 +398,9 @@ async def play_handler(_, message: Message):
 
         return
 
-    # ─────────────────────────
+    # ─────────────────────────────────────────
     # COOLDOWN
-    # ─────────────────────────
+    # ─────────────────────────────────────────
 
     now = time.time()
 
@@ -392,7 +423,8 @@ async def play_handler(_, message: Message):
 
             rep = await bot.send_message(
                 chat_id,
-                f"<b>❍ ᴄᴏᴏʟᴅᴏᴡɴ :</b> "
+                f"<b>❍ ᴄᴏᴏʟᴅᴏᴡɴ ᴀᴄᴛɪᴠᴇ</b>\n"
+                f"<b>❍ ᴘʀᴏᴄᴇssɪɴɢ ɪɴ :</b> "
                 f"<code>{rem}s</code>",
                 parse_mode=ParseMode.HTML,
             )
@@ -405,7 +437,7 @@ async def play_handler(_, message: Message):
             asyncio.create_task(
                 _run_pending(
                     chat_id,
-                    rem,
+                    rem
                 )
             )
 
@@ -413,10 +445,25 @@ async def play_handler(_, message: Message):
 
     _last_cmd[chat_id] = now
 
+    if not query:
+
+        await bot.send_message(
+            chat_id,
+            "<b>❍ ᴜsᴀɢᴇ :</b> "
+            "<code>/play song name</code>\n"
+            "<b>❍ ᴏʀ :</b> "
+            "<code>/play youtube url</code>\n"
+            "<b>❍ ᴠɪᴅᴇᴏ :</b> "
+            "<code>/vplay song name</code>",
+            parse_mode=ParseMode.HTML,
+        )
+
+        return
+
     await _process_play(
         message,
         query,
-        video=(cmd == "vplay"),
+        video=(cmd == "vplay")
     )
 
 
@@ -427,8 +474,8 @@ async def play_handler(_, message: Message):
 async def _process_play(
     message: Message,
     query: str,
-    video: bool = False,
-):
+    video: bool = False
+) -> None:
 
     chat_id = message.chat.id
 
@@ -437,60 +484,53 @@ async def _process_play(
         parse_mode=ParseMode.HTML,
     )
 
-    # ─────────────────────────
+    # ─────────────────────────────────────────
     # ASSISTANT CHECK
-    # ─────────────────────────
+    # ─────────────────────────────────────────
 
-    try:
+    status = await _is_assistant_in(chat_id)
 
-        from ShizuMusic.__main__ import (
-            ASSISTANT_USERNAME
+    if status == "banned":
+
+        await pm.edit_text(
+            "<b>❍ ᴀssɪsᴛᴀɴᴛ ʙᴀɴɴᴇᴅ</b>\n"
+            "<b>❍ ᴘʟᴇᴀsᴇ ᴜɴʙᴀɴ ᴀssɪsᴛᴀɴᴛ "
+            "ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ</b>",
+            parse_mode=ParseMode.HTML,
         )
 
-    except Exception:
+        return
 
-        ASSISTANT_USERNAME = ""
+    if not status:
 
-    if ASSISTANT_USERNAME:
+        await pm.edit_text(
+            "<b>❍ ᴀssɪsᴛᴀɴᴛ ɪs ᴊᴏɪɴɪɴɢ ᴛʜᴇ ɢʀᴏᴜᴘ...</b>",
+            parse_mode=ParseMode.HTML,
+        )
 
-        status = await _is_assistant_in(
+        ok = await _try_join_assistant(
             chat_id,
-            ASSISTANT_USERNAME,
+            pm,
         )
 
-        if status == "banned":
-
-            await pm.edit_text(
-                "<b>❍ ᴀssɪsᴛᴀɴᴛ ʙᴀɴɴᴇᴅ</b>",
-                parse_mode=ParseMode.HTML,
-            )
-
+        if not ok:
             return
 
-        if not status:
+        await pm.edit_text(
+            "<b>❍ ᴀssɪsᴛᴀɴᴛ ʜᴀs ᴊᴏɪɴᴇᴅ ✓</b>\n"
+            "<b>❍ ᴘʀᴏᴄᴇssɪɴɢ...</b>",
+            parse_mode=ParseMode.HTML,
+        )
 
-            await pm.edit_text(
-                "<b>❍ ᴀssɪsᴛᴀɴᴛ ᴊᴏɪɴɪɴɢ...</b>",
-                parse_mode=ParseMode.HTML,
-            )
-
-            ok = await _try_join_assistant(
-                chat_id,
-                pm,
-            )
-
-            if not ok:
-                return
-
-    # ─────────────────────────
-    # NORMALISE URL
-    # ─────────────────────────
+    # ─────────────────────────────────────────
+    # NORMALISE SHORT URL
+    # ─────────────────────────────────────────
 
     if "youtu.be" in query:
 
         m = re.search(
             r"youtu\.be/([^?&]+)",
-            query,
+            query
         )
 
         if m:
@@ -500,9 +540,9 @@ async def _process_play(
                 f"{m.group(1)}"
             )
 
-    # ─────────────────────────
-    # SEARCH
-    # ─────────────────────────
+    # ─────────────────────────────────────────
+    # SEARCH YOUTUBE
+    # ─────────────────────────────────────────
 
     try:
 
@@ -518,22 +558,102 @@ async def _process_play(
 
         return
 
-    # ─────────────────────────
+    # ─────────────────────────────────────────
     # PLAYLIST
-    # ─────────────────────────
+    # ─────────────────────────────────────────
 
-    if isinstance(result, dict):
+    if (
+        isinstance(result, dict)
+        and "playlist" in result
+    ):
 
-        await pm.edit_text(
-            "<b>❍ ᴘʟᴀʏʟɪsᴛ ɴᴏᴛ sᴜᴘᴘᴏʀᴛᴇᴅ</b>",
+        items = result["playlist"]
+
+        if not items:
+
+            await pm.edit_text(
+                "<b>❍ ᴘʟᴀʏʟɪsᴛ ᴇᴍᴩᴛʏ</b>",
+                parse_mode=ParseMode.HTML,
+            )
+
+            return
+
+        req = (
+            message.from_user.first_name
+            if message.from_user
+            else "Unknown"
+        )
+
+        req_id = (
+            message.from_user.id
+            if message.from_user
+            else 0
+        )
+
+        first_was_empty = (
+            queue_size(chat_id) == 0
+        )
+
+        for item in items:
+
+            add_to_queue(
+                chat_id,
+                {
+                    "url": item["link"],
+                    "title": item["title"],
+                    "duration": iso_to_human(
+                        item["duration"]
+                    ),
+                    "duration_seconds": iso_to_sec(
+                        item["duration"]
+                    ),
+                    "requester": req,
+                    "requester_id": req_id,
+                    "thumbnail": item["thumbnail"],
+                },
+            )
+
+        text = (
+            f"<b>❍ ᴘʟᴀʏʟɪsᴛ ᴀᴅᴅᴇᴅ</b>\n"
+            f"<b>❍ sᴏɴɢs :</b> "
+            f"<code>{len(items)}</code>\n"
+            f"<b>❍ ғɪʀsᴛ :</b> "
+            f"<code>{short(items[0]['title'])}</code>"
+        )
+
+        if len(items) > 1:
+
+            text += (
+                f"\n<b>❍ ɴᴇxᴛ :</b> "
+                f"<code>{short(items[1]['title'])}</code>"
+            )
+
+        await message.reply(
+            text,
             parse_mode=ParseMode.HTML,
         )
 
+        if first_was_empty:
+
+            first_song = peek_current(chat_id)
+
+            if first_song:
+
+                await play_song(
+                    chat_id,
+                    pm,
+                    first_song
+                )
+
+        else:
+
+            await pm.delete()
+
         return
 
-    # ─────────────────────────
+    # ─────────────────────────────────────────
     # SINGLE TRACK
-    # ─────────────────────────
+    # ─────────────────────────────────────────
 
     url, title, dur_iso, thumb = result
 
@@ -551,7 +671,11 @@ async def _process_play(
     if secs > config.MAX_DURATION_SECONDS:
 
         await pm.edit_text(
-            "<b>❍ sᴏɴɢ ᴛᴏᴏ ʟᴏɴɢ</b>",
+            f"<b>❍ sᴏɴɢ ᴛᴏᴏ ʟᴏɴɢ</b>\n"
+            f"<b>❍ ᴅᴜʀ :</b> "
+            f"<code>{iso_to_human(dur_iso)}</code>\n"
+            f"<b>❍ ᴍᴀx :</b> "
+            f"<code>{config.MAX_DURATION_SECONDS // 60} min</code>",
             parse_mode=ParseMode.HTML,
         )
 
@@ -582,28 +706,25 @@ async def _process_play(
 
     pos = add_to_queue(chat_id, song)
 
-    # ─────────────────────────
+    # ─────────────────────────────────────────
     # PLAY NOW
-    # ─────────────────────────
+    # ─────────────────────────────────────────
 
     if pos == 1:
 
-        ok = await play_song(
+        await play_song(
             chat_id,
             pm,
-            song,
+            song
         )
 
-        if not ok:
-            return
-
-    # ─────────────────────────
+    # ─────────────────────────────────────────
     # ADD TO QUEUE
-    # ─────────────────────────
+    # ─────────────────────────────────────────
 
     else:
 
-        keyboard = InlineKeyboardMarkup(
+        kb = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
@@ -624,10 +745,12 @@ async def _process_play(
             f"<code>{short(title)}</code>\n"
             f"<b>❍ ᴅᴜʀ :</b> "
             f"<code>{iso_to_human(dur_iso)}</code>\n"
+            f"<b>❍ ʙʏ :</b> "
+            f"<code>{req}</code>\n"
             f"<b>❍ ᴩᴏs :</b> "
             f"<code>#{pos - 1}</code>",
             parse_mode=ParseMode.HTML,
-            reply_markup=keyboard,
+            reply_markup=kb,
         )
 
         await pm.delete()
