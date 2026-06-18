@@ -25,7 +25,7 @@ from NovusMusic import bot
 from NovusMusic.modules.block import user_allowed
 
 # ── Source repo URL ────────────────────────────────────────────────────────────
-SOURCE_URL = "https://github.com/Badmunda05/NovusMusic"
+SOURCE_URL = "https://github.com/novuscodelab/NovusMusic"
 
 
 # ── /repo ──────────────────────────────────────────────────────────────────────

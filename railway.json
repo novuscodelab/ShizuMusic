@@ -31,7 +31,7 @@
     "SESSION_NAME": "NovusMusic",
     "PORT": "10000",
 
-    "MAX_DURATION_SECONDS": "1800",
+    "MAX_DURATION_SECONDS": "10800",
     "QUEUE_LIMIT": "20",
     "COOLDOWN": "10"
   }

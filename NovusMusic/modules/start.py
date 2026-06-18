@@ -81,7 +81,7 @@ async def start_handler(_, message: Message) -> None:
                 InlineKeyboardButton("Owner",
                                      url=f"tg://user?id={config.OWNER_ID}"),
                 InlineKeyboardButton("Source",
-                                     url="https://github.com/Badmunda05/NovusMusic/fork"),
+                                     url="https://github.com/novuscodelab/NovusMusic"),
             ],
         ])
 

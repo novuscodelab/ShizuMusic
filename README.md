@@ -73,25 +73,25 @@
 
 ###  Heroku
 
-[![Deploy on Heroku](https://img.shields.io/badge/Deploy%20On%20Heroku-430098?style=for-the-badge&logo=heroku&logoColor=white)](https://dashboard.heroku.com/new?template=https://github.com/Badmunda05/NovusMusic)
+[![Deploy on Heroku](https://img.shields.io/badge/Deploy%20On%20Heroku-430098?style=for-the-badge&logo=heroku&logoColor=white)](https://dashboard.heroku.com/new?template=https://github.com/novuscodelab/NovusMusic)
 
 ---
 
 ###  Koyeb
 
-[![Deploy on Koyeb](https://img.shields.io/badge/Deploy%20On%20Koyeb-121212?style=for-the-badge&logo=koyeb&logoColor=white)](https://app.koyeb.com/deploy?type=git&repository=github.com/Badmunda05/NovusMusic&branch=main&name=novusmusic)
+[![Deploy on Koyeb](https://img.shields.io/badge/Deploy%20On%20Koyeb-121212?style=for-the-badge&logo=koyeb&logoColor=white)](https://app.koyeb.com/deploy?type=git&repository=github.com/novuscodelab/NovusMusic&branch=main&name=novusmusic)
 
 ---
 
 ###  Render
 
-[![Deploy on Render](https://img.shields.io/badge/Deploy%20On%20Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://render.com/deploy?repo=https://github.com/Badmunda05/NovusMusic)
+[![Deploy on Render](https://img.shields.io/badge/Deploy%20On%20Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://render.com/deploy?repo=https://github.com/novuscodelab/NovusMusic)
 
 ---
 
 ###  Railway
 
-[![Deploy on Railway](https://img.shields.io/badge/Deploy%20On%20Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://railway.app/new/template?template=https://github.com/Badmunda05/NovusMusic)
+[![Deploy on Railway](https://img.shields.io/badge/Deploy%20On%20Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://railway.app/new/template?template=https://github.com/novuscodelab/NovusMusic)
 
 </div>
 
@@ -109,7 +109,7 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y python3 python3-pip git ffmpeg
 
 # 3. Clone the repo
-git clone https://github.com/Badmunda05/NovusMusic
+git clone https://github.com/novuscodelab/NovusMusic
 cd NovusMusic
 
 # 4. Install Python requirements
@@ -172,7 +172,7 @@ screen -r novus
 
 | Variable | Default | Description |
 |---|---|---|
-| `MAX_DURATION_SECONDS` | `1800` | Max song duration (30 minutes) |
+| `MAX_DURATION_SECONDS` | `10800` | Max song duration (3 hours) |
 | `QUEUE_LIMIT` | `20` | Max songs in queue per chat |
 | `COOLDOWN` | `10` | Seconds between /play per chat |
 
@@ -189,7 +189,7 @@ screen -r novus
 ---
 ##  License
 
-This project is licensed under the [MIT License](https://github.com/Badmunda05/NovusMusic/blob/main/LICENSE) © 2026 NovusMusic™
+This project is licensed under the [MIT License](https://github.com/novuscodelab/NovusMusic/blob/main/LICENSE) © 2026 NovusMusic™
 
 ---
 <div align="center">
@@ -198,9 +198,9 @@ This project is licensed under the [MIT License](https://github.com/Badmunda05/N
 
 **Made with  by PBX — NovusMusic™**
 
-[![Repo](https://img.shields.io/badge/GitHub-NovusMusic-181717?style=for-the-badge&logo=github)](https://github.com/Badmunda05/NovusMusic)
-[![Stars](https://img.shields.io/github/stars/Badmunda05/NovusMusic?style=for-the-badge&color=yellow)](https://github.com/Badmunda05/NovusMusic/stargazers)
-[![Forks](https://img.shields.io/github/forks/Badmunda05/NovusMusic?style=for-the-badge&color=blue)](https://github.com/Badmunda05/NovusMusic/network/members)
+[![Repo](https://img.shields.io/badge/GitHub-NovusMusic-181717?style=for-the-badge&logo=github)](https://github.com/novuscodelab/NovusMusic)
+[![Stars](https://img.shields.io/github/stars/novuscodelab/NovusMusic?style=for-the-badge&color=yellow)](https://github.com/novuscodelab/NovusMusic/stargazers)
+[![Forks](https://img.shields.io/github/forks/novuscodelab/NovusMusic?style=for-the-badge&color=blue)](https://github.com/novuscodelab/NovusMusic/network/members)
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 

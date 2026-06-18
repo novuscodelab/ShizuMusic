@@ -214,7 +214,7 @@ _HELP_TEXTS = {
         "<b>├────────────────────▣</b>\n"
         "<b>│ ʏᴏᴜᴛᴜʙᴇ ᴜʀʟs sᴜᴩᴩᴏʀᴛᴇᴅ</b>\n"
         "<b>├────────────────────▣</b>\n"
-        f"<b>│ ᴍᴀx ᴅᴜʀᴀᴛɪᴏɴ : {config.MAX_DURATION_SECONDS // 60} ᴍɪɴᴜᴛᴇs</b>\n"
+        f"<b>│ ᴍᴀx ᴅᴜʀᴀᴛɪᴏɴ : {config.MAX_DURATION_SECONDS // 3600} ᴊᴀᴍ</b>\n"
         f"<b>│ ǫᴜᴇᴜᴇ ʟɪᴍɪᴛ : {config.QUEUE_LIMIT} sᴏɴɢs</b>\n"
         "<b>╰────────────────────▣</b>"
     ),
@@ -455,7 +455,7 @@ async def _go_back(cbq: CallbackQuery) -> None:
             InlineKeyboardButton("Owner",
                                  url=f"tg://user?id={config.OWNER_ID}"),
             InlineKeyboardButton("Source",
-                                 url="https://github.com/Badmunda05/NovusMusic/fork"),
+                                 url="https://github.com/novuscodelab/NovusMusic"),
         ],
     ])
 
