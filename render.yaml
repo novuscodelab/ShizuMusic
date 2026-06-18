@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ShizuMusicBot
+    name: NovusMusicBot
     env: python
     plan: free
 
@@ -51,7 +51,7 @@ services:
         value: 3.10.13
 
       - key: SESSION_NAME
-        value: ShizuMusic
+        value: NovusMusic
 
       - key: PORT
         value: "10000"
