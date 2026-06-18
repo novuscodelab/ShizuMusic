@@ -1,7 +1,7 @@
 {
-  "name": "Shizu Music Bot",
-  "description": "Shizu Music — Free Telegram VC Music Bot that runs easily on Render, Railway, Koyeb & Heroku.",
-  "repository": "https://github.com/Badmunda05/ShizuMusic",
+  "name": "Novus Music Bot",
+  "description": "Novus Music — Free Telegram VC Music Bot that runs easily on Render, Railway, Koyeb & Heroku.",
+  "repository": "https://github.com/Badmunda05/NovusMusic",
   "logo": "https://files.catbox.moe/9kwxtu.png",
 
   "keywords": [
@@ -11,7 +11,7 @@
     "vc",
     "python",
     "pyrogram",
-    "shizumusic"
+    "novusmusic"
   ],
 
   "env": {
@@ -83,7 +83,7 @@
     "SESSION_NAME": {
       "description": "Pyrogram Session Name",
       "required": false,
-      "value": "ShizuMusic"
+      "value": "NovusMusic"
     },
 
     "PORT": {

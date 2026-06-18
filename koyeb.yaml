@@ -1,11 +1,11 @@
-name: ShizuMusic
+name: NovusMusic
 
 services:
-  - name: shizumusic
+  - name: novusmusic
     type: worker
 
     git:
-      repository: https://github.com/Badmunda05/ShizuMusic
+      repository: https://github.com/Badmunda05/NovusMusic
       branch: main
 
     build:
@@ -55,7 +55,7 @@ services:
         value: "https://files.catbox.moe/ddzvc0.jpg"
 
       - name: SESSION_NAME
-        value: "ShizuMusic"
+        value: "NovusMusic"
 
       - name: PORT
         value: "10000"
