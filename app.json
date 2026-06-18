@@ -1,7 +1,7 @@
 {
   "name": "Novus Music Bot",
   "description": "Novus Music — Free Telegram VC Music Bot that runs easily on Render, Railway, Koyeb & Heroku.",
-  "repository": "https://github.com/Badmunda05/NovusMusic",
+  "repository": "https://github.com/novuscodelab/NovusMusic",
   "logo": "https://files.catbox.moe/9kwxtu.png",
 
   "keywords": [
@@ -95,7 +95,7 @@
     "MAX_DURATION_SECONDS": {
       "description": "Maximum Song Duration Limit",
       "required": false,
-      "value": "1800"
+      "value": "10800"
     },
 
     "QUEUE_LIMIT": {

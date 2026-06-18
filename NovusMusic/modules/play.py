@@ -40,6 +40,10 @@ _last_cmd: dict[int, float] = {}
 _pending:  dict[int, tuple] = {}
 
 
+def _max_duration_text() -> str:
+    return fmt_time(config.MAX_DURATION_SECONDS)
+
+
 # ── DB helper ──────────────────────────────────────────────────────────────────
 
 def _db_track(chat_id: int, user_id: int) -> None:
@@ -122,11 +126,21 @@ async def play_handler(_, message: Message) -> None:
         except Exception:
             pass
 
+        duration_seconds = media.duration or 0
+        if duration_seconds > config.MAX_DURATION_SECONDS:
+            await pm.edit_text(
+                f"<b> ᴍᴇᴅɪᴀ ᴛᴏᴏ ʟᴏɴɢ</b>\n"
+                f"<b> ᴅᴜʀ :</b> <code>{fmt_time(duration_seconds)}</code>\n"
+                f"<b> ᴍᴀx :</b> <code>{_max_duration_text()}</code>",
+                parse_mode=ParseMode.HTML,
+            )
+            return
+
         song = {
             "url":              fp,
             "title":            getattr(media, "file_name", "Audio"),
-            "duration":         fmt_time(media.duration or 0),
-            "duration_seconds": media.duration or 0,
+            "duration":         fmt_time(duration_seconds),
+            "duration_seconds": duration_seconds,
             "requester":        message.from_user.first_name if message.from_user else "Unknown",
             "requester_id":     user_id,
             "thumbnail":        thumb,
@@ -177,7 +191,8 @@ async def play_handler(_, message: Message) -> None:
             chat_id,
             "<b> ᴜsᴀɢᴇ :</b> <code>/play song name</code>\n"
             "<b> ᴏʀ :</b> <code>/play youtube url</code>\n"
-            "<b> ᴠɪᴅᴇᴏ :</b> <code>/vplay song name</code>",
+            f"<b> ᴠɪᴅᴇᴏ :</b> <code>/vplay song name</code>\n"
+            f"<b> ᴍᴀx ᴅᴜʀᴀsɪ :</b> <code>{_max_duration_text()}</code>",
             parse_mode=ParseMode.HTML,
         )
         return
@@ -248,24 +263,43 @@ async def _process_play(message: Message, query: str, video: bool = False) -> No
 
         first_was_empty = queue_size(chat_id) == 0
 
+        added_count = 0
+        skipped_count = 0
+        added_titles = []
+
         for item in items:
+            duration_seconds = iso_to_sec(item["duration"])
+            if duration_seconds > config.MAX_DURATION_SECONDS:
+                skipped_count += 1
+                continue
+
             add_to_queue(chat_id, {
                 "url":              item["link"],
                 "title":            item["title"],
                 "duration":         iso_to_human(item["duration"]),
-                "duration_seconds": iso_to_sec(item["duration"]),
+                "duration_seconds": duration_seconds,
                 "requester":        req,
                 "requester_id":     req_id,
                 "thumbnail":        item["thumbnail"],
             })
+            added_titles.append(item["title"])
+            added_count += 1
+
+        if added_count == 0:
+            await pm.edit_text(
+                f"<b> ɴᴏ ᴘʟᴀʏʟɪsᴛ sᴏɴɢs ᴜɴᴅᴇʀ ᴍᴀx ᴅᴜʀᴀsɪ</b>\n"
+                f"<b> ᴍᴀx :</b> <code>{_max_duration_text()}</code>",
+                parse_mode=ParseMode.HTML,
+            )
+            return
 
         text = (
             f"<b> ᴘʟᴀʏʟɪsᴛ ᴀᴅᴅᴇᴅ</b>\n"
-            f"<b> sᴏɴɢs :</b> <code>{len(items)}</code>\n"
-            f"<b> ғɪʀsᴛ :</b> <code>{short(items[0]['title'])}</code>"
+            f"<b> sᴏɴɢs :</b> <code>{added_count}</code>\n"
+            f"<b> ғɪʀsᴛ :</b> <code>{short(added_titles[0])}</code>"
         )
-        if len(items) > 1:
-            text += f"\n<b> ɴᴇxᴛ :</b> <code>{short(items[1]['title'])}</code>"
+        if skipped_count:
+            text += f"\n<b> sᴋɪᴘᴘᴇᴅ :</b> <code>{skipped_count}</code> (> {_max_duration_text()})"
 
         await message.reply(text, parse_mode=ParseMode.HTML)
 
@@ -290,7 +324,7 @@ async def _process_play(message: Message, query: str, video: bool = False) -> No
         await pm.edit_text(
             f"<b> sᴏɴɢ ᴛᴏᴏ ʟᴏɴɢ</b>\n"
             f"<b> ᴅᴜʀ :</b> <code>{iso_to_human(dur_iso)}</code>\n"
-            f"<b> ᴍᴀx :</b> <code>{config.MAX_DURATION_SECONDS // 60} min</code>",
+            f"<b> ᴍᴀx :</b> <code>{_max_duration_text()}</code>",
             parse_mode=ParseMode.HTML,
         )
         return
