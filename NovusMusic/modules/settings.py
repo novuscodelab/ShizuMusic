@@ -5,7 +5,7 @@
 
 from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus, ParseMode
-from pyrogram.types import Message
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 import config
 from NovusMusic import bot
@@ -31,6 +31,32 @@ async def _is_admin_or_sudo(message: Message) -> bool:
         return member.status in (ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR)
     except Exception:
         return False
+
+
+def _settings_text(chat_id: int) -> str:
+    settings = get_music_permissions(chat_id)
+    return (
+        "<b>Pengaturan izin music command</b>\n\n"
+        f"<b>/play:</b> <code>{settings['play']}</code>\n"
+        f"<b>/pause:</b> <code>{settings['pause']}</code>\n"
+        f"<b>/resume:</b> <code>{settings['resume']}</code>\n"
+        f"<b>/stop:</b> <code>{settings['stop']}</code>\n\n"
+        "<b>Pilih tombol di bawah untuk mengatur atau merubah izinnya.</b>\n"
+        "<b>Mode:</b> member = semua member, admin = admin grup, auth = admin + user yang di-/auth"
+    )
+
+
+def _settings_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("/play", callback_data="settings_menu:play"),
+            InlineKeyboardButton("/pause", callback_data="settings_menu:pause"),
+        ],
+        [
+            InlineKeyboardButton("/resume", callback_data="settings_menu:resume"),
+            InlineKeyboardButton("/stop", callback_data="settings_menu:stop"),
+        ],
+    ])
 
 
 @bot.on_message(filters.group & filters.command("settings") & group_allowed & user_allowed)
@@ -61,17 +87,11 @@ async def settings_cmd(_, message: Message) -> None:
         )
         return
 
-    settings = get_music_permissions(chat_id)
-    text = (
-        "<b>Pengaturan izin music command</b>\n\n"
-        f"<b>/play:</b> <code>{settings['play']}</code>\n"
-        f"<b>/pause:</b> <code>{settings['pause']}</code>\n"
-        f"<b>/resume:</b> <code>{settings['resume']}</code>\n"
-        f"<b>/stop:</b> <code>{settings['stop']}</code>\n\n"
-        "<b>Ubah:</b> <code>/settings play member|admin|auth</code>\n"
-        "<b>Auth user:</b> <code>/auth user_id</code>"
+    await message.reply(
+        _settings_text(chat_id),
+        parse_mode=ParseMode.HTML,
+        reply_markup=_settings_keyboard(),
     )
-    await message.reply(text, parse_mode=ParseMode.HTML)
 
 
 @bot.on_message(filters.group & filters.command("auth") & group_allowed & user_allowed)

@@ -9,7 +9,7 @@
 import asyncio
 import html
 
-from pyrogram.enums import ChatType, ParseMode
+from pyrogram.enums import ChatMemberStatus, ChatType, ParseMode
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 import config
@@ -17,7 +17,7 @@ from NovusMusic import bot, call_py
 from NovusMusic.core.call import leave_vc
 from NovusMusic.core.player import play_song
 from NovusMusic.core.queue import clear_queue, peek_current, pop_current, queue_size
-from NovusMusic.utils.db import is_user_blocked_db
+from NovusMusic.utils.db import get_music_permissions, is_user_blocked_db, set_music_permission
 from NovusMusic.utils.formatters import short
 from NovusMusic.utils.helpers import delete_file
 from NovusMusic.utils.permissions import is_music_command_authorized
@@ -273,6 +273,62 @@ _HELP_TEXTS = {
 }
 
 
+_SETTINGS_COMMANDS = ("play", "pause", "resume", "stop")
+_SETTINGS_MODES = ("member", "admin", "auth")
+
+
+def _settings_text(chat_id: int) -> str:
+    settings = get_music_permissions(chat_id)
+    return (
+        "<b>Pengaturan izin music command</b>\n\n"
+        f"<b>/play:</b> <code>{settings['play']}</code>\n"
+        f"<b>/pause:</b> <code>{settings['pause']}</code>\n"
+        f"<b>/resume:</b> <code>{settings['resume']}</code>\n"
+        f"<b>/stop:</b> <code>{settings['stop']}</code>\n\n"
+        "<b>Pilih command yang mau diatur.</b>\n"
+        "<b>Mode:</b> member = semua member, admin = admin grup, auth = admin + user yang di-/auth"
+    )
+
+
+def _settings_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("/play", callback_data="settings_menu:play"),
+            InlineKeyboardButton("/pause", callback_data="settings_menu:pause"),
+        ],
+        [
+            InlineKeyboardButton("/resume", callback_data="settings_menu:resume"),
+            InlineKeyboardButton("/stop", callback_data="settings_menu:stop"),
+        ],
+    ])
+
+
+def _settings_mode_keyboard(command: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("Member", callback_data=f"settings_set:{command}:member"),
+            InlineKeyboardButton("Admin", callback_data=f"settings_set:{command}:admin"),
+            InlineKeyboardButton("Auth", callback_data=f"settings_set:{command}:auth"),
+        ],
+        [InlineKeyboardButton("⌯ ʙᴀᴄᴋ ⌯", callback_data="settings_home")],
+    ])
+
+
+async def _can_change_settings(client, cbq: CallbackQuery) -> bool:
+    user = cbq.from_user
+    if not user:
+        return False
+    if user.id in config.SUDO_USERS:
+        return True
+    if cbq.message.chat.type not in (ChatType.SUPERGROUP, ChatType.GROUP):
+        return False
+    try:
+        member = await client.get_chat_member(cbq.message.chat.id, user.id)
+        return member.status in (ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR)
+    except Exception:
+        return False
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  MAIN CALLBACK HANDLER
 # ══════════════════════════════════════════════════════════════════════════════
@@ -287,6 +343,50 @@ async def on_callback(client, cbq: CallbackQuery) -> None:
     # ── Block check ────────────────────────────────────────────────────────────
     if user and is_user_blocked_db(user.id):
         await cbq.answer()
+        return
+
+    # ── Settings permission buttons ───────────────────────────────────────────
+    if data == "settings_home" or data.startswith(("settings_menu:", "settings_set:")):
+        if not await _can_change_settings(client, cbq):
+            await cbq.answer("Hanya admin grup yang bisa mengubah settings.", show_alert=True)
+            return
+
+        if data == "settings_home":
+            await cbq.answer()
+            await cbq.message.edit_text(
+                _settings_text(chat_id),
+                parse_mode=ParseMode.HTML,
+                reply_markup=_settings_keyboard(),
+            )
+            return
+
+        if data.startswith("settings_menu:"):
+            command = data.split(":", 1)[1]
+            if command not in _SETTINGS_COMMANDS:
+                await cbq.answer("Command tidak valid", show_alert=True)
+                return
+            current = get_music_permissions(chat_id).get(command, "admin")
+            await cbq.answer()
+            await cbq.message.edit_text(
+                f"<b>Atur izin untuk <code>/{command}</code></b>\n\n"
+                f"<b>Saat ini:</b> <code>{current}</code>\n"
+                "<b>Pilih izin baru:</b>",
+                parse_mode=ParseMode.HTML,
+                reply_markup=_settings_mode_keyboard(command),
+            )
+            return
+
+        _, command, mode = data.split(":", 2)
+        if command not in _SETTINGS_COMMANDS or mode not in _SETTINGS_MODES:
+            await cbq.answer("Pilihan tidak valid", show_alert=True)
+            return
+        set_music_permission(chat_id, command, mode)
+        await cbq.answer(f"/{command} diubah ke {mode}", show_alert=True)
+        await cbq.message.edit_text(
+            _settings_text(chat_id),
+            parse_mode=ParseMode.HTML,
+            reply_markup=_settings_keyboard(),
+        )
         return
 
     # ── Admin check for playback controls ─────────────────────────────────────
