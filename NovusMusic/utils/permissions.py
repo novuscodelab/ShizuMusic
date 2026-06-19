@@ -68,7 +68,8 @@ async def is_music_command_authorized(obj: Union[Message, CallbackQuery], comman
     if message.chat.type not in (ChatType.SUPERGROUP, ChatType.GROUP):
         return False
 
-    mode = get_music_permissions(message.chat.id).get(command, "admin")
+    settings = get_music_permissions(message.chat.id)
+    mode = settings.get(command) or (settings.get("play") if command == "vplay" else "admin")
     if mode == "member":
         return True
 

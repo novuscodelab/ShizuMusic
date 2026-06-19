@@ -273,7 +273,7 @@ _HELP_TEXTS = {
 }
 
 
-_SETTINGS_COMMANDS = ("play", "pause", "resume", "stop")
+_SETTINGS_COMMANDS = ("play", "vplay", "pause", "resume", "stop")
 _SETTINGS_MODES = ("member", "admin", "auth")
 
 
@@ -282,6 +282,7 @@ def _settings_text(chat_id: int) -> str:
     return (
         "<b>Pengaturan izin music command</b>\n\n"
         f"<b>/play:</b> <code>{settings['play']}</code>\n"
+        f"<b>/vplay:</b> <code>{settings['vplay']}</code>\n"
         f"<b>/pause:</b> <code>{settings['pause']}</code>\n"
         f"<b>/resume:</b> <code>{settings['resume']}</code>\n"
         f"<b>/stop:</b> <code>{settings['stop']}</code>\n\n"
@@ -294,6 +295,9 @@ def _settings_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("/play", callback_data="settings_menu:play"),
+            InlineKeyboardButton("/vplay", callback_data="settings_menu:vplay"),
+        ],
+        [
             InlineKeyboardButton("/pause", callback_data="settings_menu:pause"),
         ],
         [

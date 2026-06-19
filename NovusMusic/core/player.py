@@ -205,7 +205,7 @@ async def play_song(
     # ─────────────────────────────────────────
 
     try:
-        media_path = await resolve_stream(url)
+        media_path = await resolve_stream(url, video=song.get("video", False))
 
     except Exception as e:
         try:

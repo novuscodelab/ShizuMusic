@@ -85,9 +85,11 @@ async def play_handler(_, message: Message) -> None:
 
     chat_id = message.chat.id
     user_id = message.from_user.id if message.from_user else 0
+    match = message.matches[0]
+    cmd = (match.group("cmd") or "play").strip().lower()
 
-    if not await is_music_command_authorized(message, "play"):
-        await message.reply("<b> Kamu tidak punya izin untuk memakai /play di grup ini.</b>", parse_mode=ParseMode.HTML)
+    if not await is_music_command_authorized(message, cmd):
+        await message.reply(f"<b> Kamu tidak punya izin untuk memakai /{cmd} di grup ini.</b>", parse_mode=ParseMode.HTML)
         return
 
     _db_track(chat_id, user_id)
@@ -147,12 +149,13 @@ async def play_handler(_, message: Message) -> None:
 
         song = {
             "url":              fp,
-            "title":            getattr(media, "file_name", "Audio"),
+            "title":            getattr(media, "file_name", "Video" if cmd == "vplay" else "Audio"),
             "duration":         fmt_time(duration_seconds),
             "duration_seconds": duration_seconds,
             "requester":        message.from_user.first_name if message.from_user else "Unknown",
             "requester_id":     user_id,
             "thumbnail":        thumb,
+            "video":            cmd == "vplay" and bool(fresh.video),
         }
 
         add_to_queue(chat_id, song)
@@ -160,9 +163,7 @@ async def play_handler(_, message: Message) -> None:
         return
 
     # ── Text query ─────────────────────────────────────────────────────────────
-    match = message.matches[0]
     query = (match.group("q") or "").strip()
-    cmd   = (match.group("cmd") or "play").strip()
 
     try:
         await message.delete()
@@ -290,6 +291,7 @@ async def _process_play(message: Message, query: str, video: bool = False) -> No
                 "requester":        req,
                 "requester_id":     req_id,
                 "thumbnail":        item["thumbnail"],
+                "video":            video,
             })
             added_titles.append(item["title"])
             added_count += 1
