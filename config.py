@@ -14,8 +14,8 @@ BOT_TOKEN       = os.environ["BOT_TOKEN"]
 STRING_SESSION  = os.environ["STRING_SESSION"]
 MONGO_DB_URL    = os.environ["MONGO_DB_URL"]
 OWNER_ID        = int(os.environ["OWNER_ID"])
-DEVELOPER_IDS   = {7494727691}
-SUDO_USERS      = {OWNER_ID, *DEVELOPER_IDS}
+DEVELOPER_IDS   = [7494727691]
+SUDO_USERS      = [OWNER_ID, *DEVELOPER_IDS]
 
 # ── Optional ──────────────────────────────────────────────────────────────────
 BOT_NAME         = os.getenv("BOT_NAME", "Novus Music")
