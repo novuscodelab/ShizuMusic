@@ -25,7 +25,9 @@ from NovusMusic.core.queue import add_to_queue, peek_current, queue_size
 from NovusMusic.modules.block import group_allowed, user_allowed
 from NovusMusic.utils.assistant import is_assistant_in, try_join_assistant
 from NovusMusic.utils.db import add_served_chat, add_served_user
+from NovusMusic.utils.force_sub import require_force_sub
 from NovusMusic.utils.formatters import fmt_time, iso_to_human, iso_to_sec, short
+from NovusMusic.utils.permissions import is_music_command_authorized
 from NovusMusic.utils.youtube import search_yt
 
 # ── Blocked words ──────────────────────────────────────────────────────────────
@@ -78,8 +80,15 @@ async def _run_pending(chat_id: int, delay: int) -> None:
 )
 async def play_handler(_, message: Message) -> None:
 
+    if not await require_force_sub(bot, message):
+        return
+
     chat_id = message.chat.id
     user_id = message.from_user.id if message.from_user else 0
+
+    if not await is_music_command_authorized(message, "play"):
+        await message.reply("<b> Kamu tidak punya izin untuk memakai /play di grup ini.</b>", parse_mode=ParseMode.HTML)
+        return
 
     _db_track(chat_id, user_id)
 

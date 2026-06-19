@@ -12,7 +12,7 @@ from pyrogram.types import Message
 
 from NovusMusic import bot, call_py
 from NovusMusic.modules.block import group_allowed, user_allowed
-from NovusMusic.utils.permissions import is_user_authorized
+from NovusMusic.utils.permissions import is_music_command_authorized
 
 
 @bot.on_message(
@@ -23,7 +23,7 @@ from NovusMusic.utils.permissions import is_user_authorized
 )
 async def resume_cmd(_, message: Message) -> None:
 
-    if not await is_user_authorized(message):
+    if not await is_music_command_authorized(message, "resume"):
         await message.reply(
             "<b> ᴀᴅᴍɪɴ ᴏɴʟʏ</b>\n"
             "<b> ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ɪs ғᴏʀ ɢʀᴏᴜᴘ ᴀᴅᴍɪɴs.</b>",

@@ -96,7 +96,7 @@ def _run_speedtest(m):
 
 @bot.on_message(
     filters.command(["speedtest", "spt"])
-    & filters.user(config.OWNER_ID)
+    & filters.user(config.SUDO_USERS)
 )
 async def speedtest_cmd(client, message: Message) -> None:
 

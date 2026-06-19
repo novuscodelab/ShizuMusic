@@ -29,7 +29,7 @@ from NovusMusic.utils.db import (
 
 @bot.on_message(
     filters.command("stats")
-    & filters.user(config.OWNER_ID)
+    & filters.user(config.SUDO_USERS)
 )
 async def stats_cmd(_, message: Message) -> None:
     """Full system + MongoDB stats for the bot owner."""

@@ -44,7 +44,7 @@ user_allowed  = filters.create(_user_not_blocked)
 
 # ── /gblock ────────────────────────────────────────────────────────────────────
 
-@bot.on_message(filters.command("gblock") & filters.user(config.OWNER_ID))
+@bot.on_message(filters.command("gblock") & filters.user(config.SUDO_USERS))
 async def gblock_cmd(_, message: Message) -> None:
     """Block a group — /gblock or /gblock -100xxxxxxx"""
     args = message.command[1:]
@@ -87,7 +87,7 @@ async def gblock_cmd(_, message: Message) -> None:
 
 # ── /gunblock ──────────────────────────────────────────────────────────────────
 
-@bot.on_message(filters.command("gunblock") & filters.user(config.OWNER_ID))
+@bot.on_message(filters.command("gunblock") & filters.user(config.SUDO_USERS))
 async def gunblock_cmd(_, message: Message) -> None:
     """Unblock a group — /gunblock or /gunblock -100xxxxxxx"""
     args = message.command[1:]
@@ -130,7 +130,7 @@ async def gunblock_cmd(_, message: Message) -> None:
 
 # ── /ublock ────────────────────────────────────────────────────────────────────
 
-@bot.on_message(filters.command("ublock") & filters.user(config.OWNER_ID))
+@bot.on_message(filters.command("ublock") & filters.user(config.SUDO_USERS))
 async def ublock_cmd(_, message: Message) -> None:
     """Block a user — reply to their message or /ublock 123456789"""
     args      = message.command[1:]
@@ -184,7 +184,7 @@ async def ublock_cmd(_, message: Message) -> None:
 
 # ── /uunblock ──────────────────────────────────────────────────────────────────
 
-@bot.on_message(filters.command("uunblock") & filters.user(config.OWNER_ID))
+@bot.on_message(filters.command("uunblock") & filters.user(config.SUDO_USERS))
 async def uunblock_cmd(_, message: Message) -> None:
     """Unblock a user — reply to their message or /uunblock 123456789"""
     args      = message.command[1:]
@@ -231,7 +231,7 @@ async def uunblock_cmd(_, message: Message) -> None:
 
 # ── /blocklist ─────────────────────────────────────────────────────────────────
 
-@bot.on_message(filters.command("blocklist") & filters.user(config.OWNER_ID))
+@bot.on_message(filters.command("blocklist") & filters.user(config.SUDO_USERS))
 async def blocklist_cmd(_, message: Message) -> None:
     """Show all blocked groups and users."""
     groups = get_blocked_groups()

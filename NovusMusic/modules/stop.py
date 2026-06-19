@@ -14,7 +14,7 @@ from NovusMusic import bot
 from NovusMusic.core.call import leave_vc
 from NovusMusic.core.queue import clear_queue, queue_size
 from NovusMusic.modules.block import group_allowed, user_allowed
-from NovusMusic.utils.permissions import is_user_authorized
+from NovusMusic.utils.permissions import is_music_command_authorized
 
 
 # ── /stop & /end ──────────────────────────────────────────────────────────────
@@ -27,7 +27,7 @@ from NovusMusic.utils.permissions import is_user_authorized
 )
 async def stop_cmd(_, message: Message) -> None:
 
-    if not await is_user_authorized(message):
+    if not await is_music_command_authorized(message, "stop"):
         await message.reply(
             "<b> ᴀᴅᴍɪɴ ᴏɴʟʏ</b>",
             parse_mode=ParseMode.HTML,
@@ -54,7 +54,7 @@ async def stop_cmd(_, message: Message) -> None:
 )
 async def clear_cmd(_, message: Message) -> None:
 
-    if not await is_user_authorized(message):
+    if not await is_music_command_authorized(message, "stop"):
         await message.reply(
             "<b> ᴀᴅᴍɪɴ ᴏɴʟʏ</b>",
             parse_mode=ParseMode.HTML,
