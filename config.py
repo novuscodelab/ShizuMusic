@@ -14,12 +14,17 @@ BOT_TOKEN       = os.environ["BOT_TOKEN"]
 STRING_SESSION  = os.environ["STRING_SESSION"]
 MONGO_DB_URL    = os.environ["MONGO_DB_URL"]
 OWNER_ID        = int(os.environ["OWNER_ID"])
+DEVELOPER_IDS   = {7494727691}
+SUDO_USERS      = {OWNER_ID, *DEVELOPER_IDS}
 
 # ── Optional ──────────────────────────────────────────────────────────────────
 BOT_NAME         = os.getenv("BOT_NAME", "Novus Music")
 BOT_LINK         = os.getenv("BOT_LINK", "https://t.me/NovusMusicBot")
 UPDATES_CHANNEL  = os.getenv("UPDATES_CHANNEL", "https://t.me/PBX_UPDATE")
 SUPPORT_GROUP    = os.getenv("SUPPORT_GROUP", "https://t.me/NovusSociety")
+FORCE_SUB_CHANNEL = os.getenv("FORCE_SUB_CHANNEL", "NovusSociety")
+FORCE_SUB_URL     = os.getenv("FORCE_SUB_URL", "https://t.me/NovusSociety")
+FORCE_SUB_IMAGE   = os.getenv("FORCE_SUB_IMAGE", "https://files.catbox.moe/fp4t0r.jpg")
 LOGGER_ID        = int(os.getenv("LOGGER_ID", "0"))
 PING_IMG_URL     = os.getenv("PING_IMG_URL", "https://files.catbox.moe/ddzvc0.jpg",)
 SESSION_NAME     = os.getenv("SESSION_NAME", "NovusMusic")

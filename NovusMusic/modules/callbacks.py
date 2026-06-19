@@ -7,8 +7,9 @@
 # --------------------------------------------------------------------------------
 
 import asyncio
+import html
 
-from pyrogram.enums import ParseMode
+from pyrogram.enums import ChatType, ParseMode
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 import config
@@ -19,7 +20,7 @@ from NovusMusic.core.queue import clear_queue, peek_current, pop_current, queue_
 from NovusMusic.utils.db import is_user_blocked_db
 from NovusMusic.utils.formatters import short
 from NovusMusic.utils.helpers import delete_file
-from NovusMusic.utils.permissions import is_user_authorized
+from NovusMusic.utils.permissions import is_music_command_authorized
 
 
 # ── Help menu layout ───────────────────────────────────────────────────────────
@@ -290,9 +291,29 @@ async def on_callback(client, cbq: CallbackQuery) -> None:
 
     # ── Admin check for playback controls ─────────────────────────────────────
     if data in ("pause", "resume", "skip", "stop", "clear"):
-        if not await is_user_authorized(cbq):
+        check_cmd = "stop" if data in ("clear", "skip") else data
+        if not await is_music_command_authorized(cbq, check_cmd):
             await cbq.answer(" ᴀᴅᴍɪɴs ᴏɴʟʏ", show_alert=True)
             return
+
+    if data == "gitpull":
+        if cbq.message.chat.type != ChatType.PRIVATE or not user or user.id not in config.SUDO_USERS:
+            await cbq.answer("Owner/developer only", show_alert=True)
+            return
+        await cbq.answer("Running git pull...")
+        msg = await cbq.message.reply_text("<b> menjalankan git pull...</b>", parse_mode=ParseMode.HTML)
+        proc = await asyncio.create_subprocess_exec(
+            "git", "pull",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+        )
+        out, _ = await proc.communicate()
+        text = html.escape((out or b"").decode(errors="ignore")[-3500:] or "No output")
+        await msg.edit_text(
+            f"<b>git pull selesai</b> <code>({proc.returncode})</code>\n<pre>{text}</pre>",
+            parse_mode=ParseMode.HTML,
+        )
+        return
 
     # ── PAUSE ──────────────────────────────────────────────────────────────────
     if data == "pause":

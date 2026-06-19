@@ -100,7 +100,7 @@ async def _send(target_id: int, bm: Message, broadcast_type: str, text: str) -> 
 
 @bot.on_message(
     filters.command(["broadcast", "gcast"])
-    & filters.user(config.OWNER_ID)
+    & filters.user(config.SUDO_USERS)
 )
 async def broadcast_cmd(_, message: Message) -> None:
     global _IS_BROADCASTING

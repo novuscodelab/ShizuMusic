@@ -18,6 +18,7 @@ from NovusMusic import bot
 from config import START_ANIMATIONS
 from NovusMusic.modules.block import user_allowed
 from NovusMusic.utils.db import add_broadcast_chat, add_served_chat, add_served_user
+from NovusMusic.utils.force_sub import require_force_sub
 
 # ── Message effect IDs (Telegram premium effects) ─────────────────────────────
 EFFECT_ID = [
@@ -31,6 +32,9 @@ EFFECT_ID = [
 
 @bot.on_message(filters.command("start") & user_allowed)
 async def start_handler(_, message: Message) -> None:
+
+    if not await require_force_sub(bot, message):
+        return
 
     uid       = message.from_user.id
     name      = message.from_user.first_name or "User"
@@ -68,7 +72,7 @@ async def start_handler(_, message: Message) -> None:
             f"<a href='https://t.me/NovusSociety'>NovusMusic™</a></b>\n"
             "<b>╰────────────────────▣</b>"
         )
-        kb = InlineKeyboardMarkup([
+        rows = [
             [InlineKeyboardButton("Tambah ke grup",
                                   url=f"{config.BOT_LINK}?startgroup=true")],
             [
@@ -83,7 +87,10 @@ async def start_handler(_, message: Message) -> None:
                 InlineKeyboardButton("Source",
                                      url="https://github.com/novuscodelab/NovusMusic"),
             ],
-        ])
+        ]
+        if uid in config.SUDO_USERS:
+            rows.append([InlineKeyboardButton("Gitpull", callback_data="gitpull")])
+        kb = InlineKeyboardMarkup(rows)
 
         sent = await message.reply_animation(
             animation,
