@@ -142,33 +142,37 @@ async def download_video(link: str) -> str:
 # PUBLIC — STREAM RESOLVER (backward-compatible)
 # ═════════════════════════════════════════════════════════════════════════════
 
-async def resolve_stream(url: str) -> str:
-    """Resolve a YouTube URL or video ID to a local audio file path."""
+async def resolve_stream(url: str, video: bool = False) -> str:
+    """Resolve a YouTube URL or video ID to a local audio/video file path."""
     # Already a local file (e.g. Telegram audio download)
     if os.path.exists(url) and os.path.isfile(url):
         return url
 
+    cache_key = f"{'video' if video else 'audio'}:{url}"
+
     # In-memory cache
-    if url in _file_cache and os.path.exists(_file_cache[url]):
+    if cache_key in _file_cache and os.path.exists(_file_cache[cache_key]):
         logger.info("[shruti] Cache hit")
-        return _file_cache[url]
+        return _file_cache[cache_key]
 
     video_id  = _extract_video_id(url)
-    file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.mp3")
+    ext = "mp4" if video else "mp3"
+    file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.{ext}")
 
     # Disk cache
     if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
-        _file_cache[url] = file_path
+        _file_cache[cache_key] = file_path
         return file_path
 
-    logger.info(f"[shruti] Downloading: {video_id}")
-    downloaded = await download_song(url)
+    stream_type = "video" if video else "audio"
+    logger.info(f"[shruti] Downloading {stream_type}: {video_id}")
+    downloaded = await (download_video(url) if video else download_song(url))
     if downloaded:
-        _file_cache[url] = downloaded
+        _file_cache[cache_key] = downloaded
         logger.info(f"[shruti] Done — {os.path.getsize(downloaded) // 1024} KB")
         return downloaded
 
-    raise Exception("Shruti API download failed. Please try again.")
+    raise Exception(f"Shruti API {stream_type} download failed. Please try again.")
 
 
 # ═════════════════════════════════════════════════════════════════════════════

@@ -579,6 +579,7 @@ def get_nsfw_approved_users(chat_id: int) -> list:
 # ── Music Permission Settings (/settings + /auth) ─────────────────────────────
 DEFAULT_MUSIC_PERMISSIONS = {
     "play": "member",
+    "vplay": "member",
     "pause": "admin",
     "resume": "admin",
     "stop": "admin",
@@ -590,7 +591,7 @@ def get_music_permissions(chat_id: int) -> dict:
     if col is None:
         return DEFAULT_MUSIC_PERMISSIONS.copy()
     try:
-        doc = col.find_one({"_id": chat_id}) or {}
+        doc = col.find_one({"_id": int(chat_id)}) or col.find_one({"_id": str(chat_id)}) or {}
         settings = DEFAULT_MUSIC_PERMISSIONS.copy()
         for cmd in settings:
             mode = doc.get(cmd)
@@ -609,7 +610,7 @@ def set_music_permission(chat_id: int, command: str, mode: str) -> None:
     if col is None:
         return
     try:
-        col.update_one({"_id": chat_id}, {"$set": {command: mode}}, upsert=True)
+        col.update_one({"_id": int(chat_id)}, {"$set": {command: mode}}, upsert=True)
     except Exception as e:
         logger.error(f"[DB] set_music_permission: {e}")
 
@@ -619,7 +620,7 @@ def auth_music_user(chat_id: int, user_id: int) -> None:
     if col is None:
         return
     try:
-        col.update_one({"chat_id": chat_id, "user_id": user_id}, {"$set": {"chat_id": chat_id, "user_id": user_id}}, upsert=True)
+        col.update_one({"chat_id": int(chat_id), "user_id": int(user_id)}, {"$set": {"chat_id": int(chat_id), "user_id": int(user_id)}}, upsert=True)
     except Exception as e:
         logger.error(f"[DB] auth_music_user: {e}")
 
@@ -629,7 +630,7 @@ def is_music_user_authed(chat_id: int, user_id: int) -> bool:
     if col is None:
         return False
     try:
-        return col.find_one({"chat_id": chat_id, "user_id": user_id}) is not None
+        return col.find_one({"chat_id": int(chat_id), "user_id": int(user_id)}) is not None or col.find_one({"chat_id": str(chat_id), "user_id": int(user_id)}) is not None or col.find_one({"chat_id": int(chat_id), "user_id": str(user_id)}) is not None
     except Exception as e:
         logger.error(f"[DB] is_music_user_authed: {e}")
         return False
