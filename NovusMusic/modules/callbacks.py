@@ -273,7 +273,7 @@ _HELP_TEXTS = {
 }
 
 
-_SETTINGS_COMMANDS = ("play", "vplay", "pause", "resume", "stop")
+_SETTINGS_COMMANDS = ("play", "vplay", "skip", "pause", "resume", "stop")
 _SETTINGS_MODES = ("member", "admin", "auth")
 
 
@@ -283,6 +283,7 @@ def _settings_text(chat_id: int) -> str:
         "<b>Pengaturan izin music command</b>\n\n"
         f"<b>/play:</b> <code>{settings['play']}</code>\n"
         f"<b>/vplay:</b> <code>{settings['vplay']}</code>\n"
+        f"<b>/skip:</b> <code>{settings['skip']}</code>\n"
         f"<b>/pause:</b> <code>{settings['pause']}</code>\n"
         f"<b>/resume:</b> <code>{settings['resume']}</code>\n"
         f"<b>/stop:</b> <code>{settings['stop']}</code>\n\n"
@@ -298,6 +299,7 @@ def _settings_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton("/vplay", callback_data="settings_menu:vplay"),
         ],
         [
+            InlineKeyboardButton("/skip", callback_data="settings_menu:skip"),
             InlineKeyboardButton("/pause", callback_data="settings_menu:pause"),
         ],
         [
@@ -395,9 +397,9 @@ async def on_callback(client, cbq: CallbackQuery) -> None:
 
     # ── Admin check for playback controls ─────────────────────────────────────
     if data in ("pause", "resume", "skip", "stop", "clear"):
-        check_cmd = "stop" if data in ("clear", "skip") else data
+        check_cmd = "stop" if data == "clear" else data
         if not await is_music_command_authorized(cbq, check_cmd):
-            await cbq.answer(" ᴀᴅᴍɪɴs ᴏɴʟʏ", show_alert=True)
+            await cbq.answer("Kamu tidak punya izin untuk command ini", show_alert=True)
             return
 
     if data == "gitpull":
