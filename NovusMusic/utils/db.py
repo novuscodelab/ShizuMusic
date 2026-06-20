@@ -580,8 +580,9 @@ def get_nsfw_approved_users(chat_id: int) -> list:
 DEFAULT_MUSIC_PERMISSIONS = {
     "play": "member",
     "vplay": "member",
-    "pause": "admin",
-    "resume": "admin",
+    "skip": "member",
+    "pause": "member",
+    "resume": "member",
     "stop": "admin",
 }
 

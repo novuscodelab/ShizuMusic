@@ -18,7 +18,7 @@ from NovusMusic.core.queue import peek_current, pop_current, queue_size
 from NovusMusic.modules.block import group_allowed, user_allowed
 from NovusMusic.utils.formatters import short
 from NovusMusic.utils.helpers import delete_file
-from NovusMusic.utils.permissions import is_user_authorized
+from NovusMusic.utils.permissions import is_music_command_authorized
 
 
 @bot.on_message(
@@ -31,10 +31,9 @@ async def skip_cmd(_, message: Message) -> None:
 
     chat_id = message.chat.id
 
-    if not await is_user_authorized(message):
+    if not await is_music_command_authorized(message, "skip"):
         await message.reply(
-            "<b> ᴀᴅᴍɪɴ ᴏɴʟʏ</b>\n"
-            "<b> ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ɪs ғᴏʀ ɢʀᴏᴜᴘ ᴀᴅᴍɪɴs.</b>",
+            "<b> Kamu tidak punya izin untuk memakai /skip di grup ini.</b>",
             parse_mode=ParseMode.HTML,
         )
         return
